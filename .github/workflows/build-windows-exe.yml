@@ -23,11 +23,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's/strerror_r(errnum, buf, ERRBUF_SIZE);/strncpy(buf, strerror(errnum), ERRBUF_SIZE);/g' legacy/vendor/png++-0.2.9/error.hpp
-          sed -i 's/modeBasedSrcPath(CompilerMode::PRIMARY)/modeBasedSrcPath(CompilerMode::PRIMARY).string()/g' legacy/lib/legacy/compiler.cpp
-          sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/compiler.cpp
-          sed -i 's/modeBasedSrcPath(compilerMode)/modeBasedSrcPath(compilerMode).string()/g' legacy/lib/legacy/compiler.cpp
-          sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/decompiler.cpp
-          sed -i -E 's/\.modeBasedSrcPath\(([^)]+)\)/.modeBasedSrcPath(\1).string()/g' legacy/lib/legacy/decompiler.cpp
+          find legacy/ -type f \( -name "*.cpp" -o -name "*.h" \) -exec sed -i -E 's/\b(modeBasedSrcPath\([^)]+\))(?!\.string\(\))/\1.string()/g' {} +
 
       - name: Configure CMake
         run: |
