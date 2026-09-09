@@ -19,9 +19,6 @@ jobs:
       - name: Install static dependencies via vcpkg
         run: vcpkg install libpng:x64-windows-static zlib:x64-windows-static
 
-      - name: List vcpkg installed libs (Diagnostico)
-        run: dir C:\vcpkg\installed\x64-windows-static\lib
-
       - name: Apply code patches for Windows compatibility
         shell: bash
         run: |
@@ -41,6 +38,8 @@ jobs:
             -DZLIB_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/zs.lib"
 
       - name: Build Porytiles
+        env:
+          PYTHONUTF8: "1"
         run: cmake --build build --config Release
 
       - name: Upload Windows Executable
