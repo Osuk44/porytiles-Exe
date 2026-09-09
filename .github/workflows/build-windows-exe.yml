@@ -27,7 +27,7 @@ jobs:
           sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/compiler.cpp
           sed -i 's/modeBasedSrcPath(compilerMode)/modeBasedSrcPath(compilerMode).string()/g' legacy/lib/legacy/compiler.cpp
           sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/decompiler.cpp
-          sed -i 's/decompilerSrcPaths.modeBasedSrcPath(mode)/decompilerSrcPaths.modeBasedSrcPath(mode).string()/g' legacy/lib/legacy/decompiler.cpp
+          sed -i 's/decompilerSrcPaths\.modeBasedSrcPath(\([^)]*\))/decompilerSrcPaths.modeBasedSrcPath(\1).string()/g' legacy/lib/legacy/decompiler.cpp
 
       - name: Configure CMake
         run: |
