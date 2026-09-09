@@ -38,7 +38,7 @@ jobs:
             -DBUILD_TESTING=OFF `
             -DPORYTILES_BUILD_DOCS=OFF `
             -DPNG_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/libpng16.lib" `
-            -DZLIB_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/zlib.lib"
+            -DZLIB_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/zs.lib"
 
       - name: Build Porytiles
         run: cmake --build build --config Release
