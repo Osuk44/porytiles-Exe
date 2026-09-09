@@ -13,15 +13,23 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup MSVC & Developer Command Prompt
-        uses: ilammy/msvc-dev-cmd@v1
-
       - name: Install Ninja
         run: choco install ninja
+
+      - name: Install dependencies via vcpkg
+        run: vcpkg install libpng:x64-windows zlib:x64-windows
+
+      - name: Apply code patches for Windows compatibility
+        shell: bash
+        run: |
+          sed -i 's/strerror_r(errnum, buf, ERRBUF_SIZE);/strncpy(buf, strerror(errnum), ERRBUF_SIZE);/g' legacy/vendor/png++-0.2.9/error.hpp
+          sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/compiler.cpp
+          sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/decompiler.cpp
 
       - name: Configure CMake
         run: |
           cmake -B build -G Ninja `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=Release `
             -DBUILD_TESTING=OFF `
             -DPORYTILES_BUILD_DOCS=OFF
