@@ -13,8 +13,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Ninja
-        run: choco install ninja
+      - name: Install Ninja & UV
+        run: choco install ninja uv
 
       - name: Install dependencies via vcpkg
         run: vcpkg install libpng:x64-windows zlib:x64-windows
