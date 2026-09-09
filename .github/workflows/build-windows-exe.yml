@@ -1,0 +1,36 @@
+name: Build Windows Binary
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup MSVC & Developer Command Prompt
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install Ninja
+        run: choco install ninja
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DBUILD_TESTING=OFF `
+            -DPORYTILES_BUILD_DOCS=OFF
+
+      - name: Build Porytiles
+        run: cmake --build build --config Release
+
+      - name: Upload Windows Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: porytiles-windows-exe
+          path: build/porytiles.exe
