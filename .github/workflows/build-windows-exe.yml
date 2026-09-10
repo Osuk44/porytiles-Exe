@@ -53,14 +53,10 @@ jobs:
               updated, count = pattern.subn(r'modeBasedSrcPath(\1).string()', updated)
 
               if "types.h" in filepath:
-                  updated = updated.replace(
-                      "std::filesystem::path modeBasedSrcPath(CompilerMode mode)",
-                      "std::filesystem::path modeBasedSrcPath(CompilerMode mode) const"
-                  )
-                  updated = updated.replace(
-                      "std::filesystem::path modeBasedSrcPath(DecompilerMode mode)",
-                      "std::filesystem::path modeBasedSrcPath(DecompilerMode mode) const"
-                  )
+                  updated = updated.replace("modeBasedSrcPath(CompilerMode mode) const.string() const", "modeBasedSrcPath(CompilerMode mode) const")
+                  updated = updated.replace("modeBasedSrcPath(DecompilerMode mode) const.string() const", "modeBasedSrcPath(DecompilerMode mode) const")
+                  updated = updated.replace("modeBasedSrcPath(CompilerMode mode)", "modeBasedSrcPath(CompilerMode mode) const")
+                  updated = updated.replace("modeBasedSrcPath(DecompilerMode mode)", "modeBasedSrcPath(DecompilerMode mode) const")
 
               if updated != content:
                   with open(filepath, "w", encoding="utf-8") as f:
