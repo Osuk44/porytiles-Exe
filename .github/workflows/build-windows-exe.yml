@@ -23,6 +23,7 @@ jobs:
         shell: python
         run: |
           import glob
+          import re
 
           error_path = "legacy/vendor/png++-0.2.9/error.hpp"
           try:
@@ -38,6 +39,8 @@ jobs:
           except FileNotFoundError:
               print(f"No se encontró {error_path}")
 
+          pattern = re.compile(r'\bmodeBasedSrcPath\(([^)]+)\)(?!\.string\(\))')
+
           for filepath in glob.glob("legacy/**/*.cpp", recursive=True) + glob.glob("legacy/**/*.h", recursive=True):
               with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                   content = f.read()
@@ -47,11 +50,12 @@ jobs:
               updated = updated.replace("modeBasedSrcPath(CompilerMode::SECONDARY)", "modeBasedSrcPath(CompilerMode::SECONDARY).string()")
               updated = updated.replace("modeBasedSrcPath(compilerMode)", "modeBasedSrcPath(compilerMode).string()")
               updated = updated.replace("modeBasedSrcPath(mode)", "modeBasedSrcPath(mode).string()")
+              updated, count = pattern.subn(r'modeBasedSrcPath(\1).string()', updated)
 
               if updated != content:
                   with open(filepath, "w", encoding="utf-8") as f:
                       f.write(updated)
-                  print(f"Parche de rutas aplicado en: {filepath}")
+                  print(f"Parche de rutas aplicado en: {filepath} (Modificaciones: {count})")
 
       - name: Configure CMake
         run: |
