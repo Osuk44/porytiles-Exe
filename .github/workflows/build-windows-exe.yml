@@ -1,4 +1,25 @@
-- name: Apply Windows compatibility patches
+name: Build Windows Binary
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Ninja & UV
+        run: choco install ninja uv
+
+      - name: Install static dependencies via vcpkg
+        run: vcpkg install libpng:x64-windows-static zlib:x64-windows-static
+
+      - name: Apply Windows compatibility patches
         shell: python
         run: |
           import glob, re
@@ -37,11 +58,11 @@
               if s2 != s:
                   open(f, "w", encoding="utf-8").write(s2); print(f"{f}: {n} sitios")
 
-          # 2.5. Corregir inserciones en mapas incompatibles con GCC 15
+          # 2.5. Corregir inserciones en mapas usando std::make_pair para compatibilidad con GCC 15
           for filepath in glob.glob("legacy/**/*.cpp", recursive=True) + glob.glob("legacy/**/*.h", recursive=True):
               with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                   content = f.read()
-              updated = re.sub(r'\.insert\s*\(\s*\{\s*([^,]+),\s*([^}]+)\}\s*\)', r'.emplace(\1, \2)', content)
+              updated = re.sub(r'\.insert\s*\(\s*\{\s*([^,]+),\s*([^}]+)\}\s*\)', r'.insert(std::make_pair(\1, \2))', content)
               if updated != content:
                   with open(filepath, "w", encoding="utf-8") as f:
                       f.write(updated)
@@ -72,3 +93,25 @@
               for i, line in enumerate(open(f, encoding="utf-8", errors="ignore"), 1):
                   if re.search(r'modeBased\w+\(', line) and ".string()" not in line:
                       print(f"REVISAR {f}:{i}: {line.strip()}")
+
+      - name: Configure CMake
+        run: |
+          cmake -B build -G Ninja `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DVCPKG_TARGET_TRIPLET=x64-windows-static `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DBUILD_TESTING=OFF `
+            -DPORYTILES_BUILD_DOCS=OFF `
+            -DPNG_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/libpng16.lib" `
+            -DZLIB_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/zs.lib"
+
+      - name: Build Porytiles
+        env:
+          PYTHONUTF8: "1"
+        run: cmake --build build --config Release
+
+      - name: Upload Windows Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: porytiles-windows-exe
+          path: build/porytiles.exe
