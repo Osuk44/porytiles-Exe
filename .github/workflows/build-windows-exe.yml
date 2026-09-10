@@ -19,64 +19,56 @@ jobs:
       - name: Install static dependencies via vcpkg
         run: vcpkg install libpng:x64-windows-static zlib:x64-windows-static
 
-      - name: Apply code patches for Windows compatibility
+      - name: Apply Windows compatibility patches
         shell: python
         run: |
-          import glob
-          import re
+          import glob, re
 
-          # 1. Parche para error.hpp
-          error_path = "legacy/vendor/png++-0.2.9/error.hpp"
+          # 1. png++: strerror_r (POSIX) no existe en MinGW
+          p = "legacy/vendor/png++-0.2.9/error.hpp"
           try:
-              with open(error_path, "r", encoding="utf-8") as f:
-                  content = f.read()
-              content = content.replace(
-                  "strerror_r(errnum, buf, ERRBUF_SIZE);",
-                  "strncpy(buf, strerror(errnum), ERRBUF_SIZE);"
-              )
-              with open(error_path, "w", encoding="utf-8") as f:
-                  f.write(content)
-              print("Parche de error.hpp aplicado con éxito.")
+              s = open(p, encoding="utf-8").read()
+              s2 = s.replace("strerror_r(errnum, buf, ERRBUF_SIZE);",
+                             "strncpy(buf, strerror(errnum), ERRBUF_SIZE);")
+              if s2 != s:
+                  open(p, "w", encoding="utf-8").write(s2); print("error.hpp parcheado")
           except FileNotFoundError:
               pass
 
-          # 2. Corregir y limpiar types.h (asegurar declaraciones limpias con const y sin .string())
-          for filepath in glob.glob("legacy/**/types.h", recursive=True):
-              with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                  content = f.read()
-              
-              # Limpiar restos anteriores si los hubiera
-              updated = re.sub(r'modeBasedSrcPath\(([^)]+)\)\.string\(\)', r'modeBasedSrcPath(\1)', content)
-              updated = re.sub(r'modeBasedSrcPath\(([^)]+)\)\s*const\.string\(\)\s*const', r'modeBasedSrcPath(\1) const', updated)
-              
-              # Asegurar firma const correcta
-              updated = updated.replace("std::filesystem::path modeBasedSrcPath(CompilerMode mode);", "std::filesystem::path modeBasedSrcPath(CompilerMode mode) const;")
-              updated = updated.replace("std::filesystem::path modeBasedSrcPath(DecompilerMode mode);", "std::filesystem::path modeBasedSrcPath(DecompilerMode mode) const;")
-              updated = updated.replace("std::filesystem::path modeBasedSrcPath(CompilerMode mode)", "std::filesystem::path modeBasedSrcPath(CompilerMode mode) const")
-              updated = updated.replace("std::filesystem::path modeBasedSrcPath(DecompilerMode mode)", "std::filesystem::path modeBasedSrcPath(DecompilerMode mode) const")
+          # 2. .string() en TODO getter modeBased* usado como argumento.
+          #    Lookahead [,)}]: jamás toca declaraciones (;) ni definitions ({ const...).
+          pat = re.compile(r'\b(modeBased\w+)\(([^()]*)\)(?=\s*[,)}])')
+          for f in glob.glob("legacy/**/*.h", recursive=True) + glob.glob("legacy/**/*.cpp", recursive=True):
+              s = open(f, encoding="utf-8", errors="ignore").read()
+              s2, n = pat.subn(r'\1(\2).string()', s)
+              if s2 != s:
+                  open(f, "w", encoding="utf-8").write(s2); print(f"{f}: {n} sitios")
 
-              if updated != content:
-                  with open(filepath, "w", encoding="utf-8") as f:
-                      f.write(updated)
-                  print(f"Cabecera types.h corregida: {filepath}")
+          # 3. Sitios manuales en driver.cpp (variables, no llamadas)
+          drv = "legacy/lib/legacy/driver.cpp"
+          try:
+              s = open(drv, encoding="utf-8", errors="ignore").read()
+              reps = [
+                  ("png{frames.at(i)}", "png{frames.at(i).string()}"),
+                  ("tilesPng.write(tilesetPath);", "tilesPng.write(tilesetPath.string());"),
+                  ("frame.write(framePngPath);", "frame.write(framePngPath.string());"),
+                  ("bottomPng.write(bottomPath);", "bottomPng.write(bottomPath.string());"),
+                  ("middlePng.write(middlePath);", "middlePng.write(middlePath.string());"),
+                  ("topPng.write(topPath);", "topPng.write(topPath.string());"),
+                  ("paletteFileNames.emplace_back(paletteFile.c_str());",
+                   "paletteFileNames.emplace_back(paletteFile.string());"),
+              ]
+              for a, b in reps:
+                  s = s.replace(a, b)
+              open(drv, "w", encoding="utf-8").write(s)
+          except FileNotFoundError:
+              pass
 
-          # 3. Aplicar .string() únicamente en los archivos de implementación .cpp
-          pattern = re.compile(r'\bmodeBasedSrcPath\(([^)]+)\)(?!\.string\(\))')
-          for filepath in glob.glob("legacy/**/*.cpp", recursive=True):
-              with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                  content = f.read()
-              
-              updated = content
-              updated = updated.replace("modeBasedSrcPath(CompilerMode::PRIMARY)", "modeBasedSrcPath(CompilerMode::PRIMARY).string()")
-              updated = updated.replace("modeBasedSrcPath(CompilerMode::SECONDARY)", "modeBasedSrcPath(CompilerMode::SECONDARY).string()")
-              updated = updated.replace("modeBasedSrcPath(compilerMode)", "modeBasedSrcPath(compilerMode).string()")
-              updated = updated.replace("modeBasedSrcPath(mode)", "modeBasedSrcPath(mode).string()")
-              updated, count = pattern.subn(r'modeBasedSrcPath(\1).string()', updated)
-
-              if updated != content:
-                  with open(filepath, "w", encoding="utf-8") as f:
-                      f.write(updated)
-                  print(f"Llamada parcheada en .cpp: {filepath}")
+          # 4. Auditoría: lista lo que quedó sin .string() para revisión
+          for f in glob.glob("legacy/**/*.h", recursive=True) + glob.glob("legacy/**/*.cpp", recursive=True):
+              for i, line in enumerate(open(f, encoding="utf-8", errors="ignore"), 1):
+                  if re.search(r'modeBased\w+\(', line) and ".string()" not in line:
+                      print(f"REVISAR {f}:{i}: {line.strip()}")
 
       - name: Configure CMake
         run: |
