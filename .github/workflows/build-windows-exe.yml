@@ -25,6 +25,7 @@ jobs:
           import glob
           import re
 
+          # 1. Parche para error.hpp
           error_path = "legacy/vendor/png++-0.2.9/error.hpp"
           try:
               with open(error_path, "r", encoding="utf-8") as f:
@@ -37,11 +38,31 @@ jobs:
                   f.write(content)
               print("Parche de error.hpp aplicado con éxito.")
           except FileNotFoundError:
-              print(f"No se encontró {error_path}")
+              pass
 
+          # 2. Corregir y limpiar types.h (asegurar declaraciones limpias con const y sin .string())
+          for filepath in glob.glob("legacy/**/types.h", recursive=True):
+              with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                  content = f.read()
+              
+              # Limpiar restos anteriores si los hubiera
+              updated = re.sub(r'modeBasedSrcPath\(([^)]+)\)\.string\(\)', r'modeBasedSrcPath(\1)', content)
+              updated = re.sub(r'modeBasedSrcPath\(([^)]+)\)\s*const\.string\(\)\s*const', r'modeBasedSrcPath(\1) const', updated)
+              
+              # Asegurar firma const correcta
+              updated = updated.replace("std::filesystem::path modeBasedSrcPath(CompilerMode mode);", "std::filesystem::path modeBasedSrcPath(CompilerMode mode) const;")
+              updated = updated.replace("std::filesystem::path modeBasedSrcPath(DecompilerMode mode);", "std::filesystem::path modeBasedSrcPath(DecompilerMode mode) const;")
+              updated = updated.replace("std::filesystem::path modeBasedSrcPath(CompilerMode mode)", "std::filesystem::path modeBasedSrcPath(CompilerMode mode) const")
+              updated = updated.replace("std::filesystem::path modeBasedSrcPath(DecompilerMode mode)", "std::filesystem::path modeBasedSrcPath(DecompilerMode mode) const")
+
+              if updated != content:
+                  with open(filepath, "w", encoding="utf-8") as f:
+                      f.write(updated)
+                  print(f"Cabecera types.h corregida: {filepath}")
+
+          # 3. Aplicar .string() únicamente en los archivos de implementación .cpp
           pattern = re.compile(r'\bmodeBasedSrcPath\(([^)]+)\)(?!\.string\(\))')
-
-          for filepath in glob.glob("legacy/**/*.cpp", recursive=True) + glob.glob("legacy/**/*.h", recursive=True):
+          for filepath in glob.glob("legacy/**/*.cpp", recursive=True):
               with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
                   content = f.read()
               
@@ -52,16 +73,10 @@ jobs:
               updated = updated.replace("modeBasedSrcPath(mode)", "modeBasedSrcPath(mode).string()")
               updated, count = pattern.subn(r'modeBasedSrcPath(\1).string()', updated)
 
-              if "types.h" in filepath:
-                  updated = updated.replace("modeBasedSrcPath(CompilerMode mode) const.string() const", "modeBasedSrcPath(CompilerMode mode) const")
-                  updated = updated.replace("modeBasedSrcPath(DecompilerMode mode) const.string() const", "modeBasedSrcPath(DecompilerMode mode) const")
-                  updated = updated.replace("modeBasedSrcPath(CompilerMode mode)", "modeBasedSrcPath(CompilerMode mode) const")
-                  updated = updated.replace("modeBasedSrcPath(DecompilerMode mode)", "modeBasedSrcPath(DecompilerMode mode) const")
-
               if updated != content:
                   with open(filepath, "w", encoding="utf-8") as f:
                       f.write(updated)
-                  print(f"Parche aplicado en: {filepath}")
+                  print(f"Llamada parcheada en .cpp: {filepath}")
 
       - name: Configure CMake
         run: |
