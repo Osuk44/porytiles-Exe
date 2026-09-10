@@ -52,10 +52,20 @@ jobs:
               updated = updated.replace("modeBasedSrcPath(mode)", "modeBasedSrcPath(mode).string()")
               updated, count = pattern.subn(r'modeBasedSrcPath(\1).string()', updated)
 
+              if "types.h" in filepath:
+                  updated = updated.replace(
+                      "std::filesystem::path modeBasedSrcPath(CompilerMode mode)",
+                      "std::filesystem::path modeBasedSrcPath(CompilerMode mode) const"
+                  )
+                  updated = updated.replace(
+                      "std::filesystem::path modeBasedSrcPath(DecompilerMode mode)",
+                      "std::filesystem::path modeBasedSrcPath(DecompilerMode mode) const"
+                  )
+
               if updated != content:
                   with open(filepath, "w", encoding="utf-8") as f:
                       f.write(updated)
-                  print(f"Parche de rutas aplicado en: {filepath} (Modificaciones: {count})")
+                  print(f"Parche aplicado en: {filepath}")
 
       - name: Configure CMake
         run: |
