@@ -20,15 +20,38 @@ jobs:
         run: vcpkg install libpng:x64-windows-static zlib:x64-windows-static
 
       - name: Apply code patches for Windows compatibility
-        shell: bash
+        shell: python
         run: |
-          sed -i 's/strerror_r(errnum, buf, ERRBUF_SIZE);/strncpy(buf, strerror(errnum), ERRBUF_SIZE);/g' legacy/vendor/png++-0.2.9/error.hpp
-          sed -i 's/modeBasedSrcPath(CompilerMode::PRIMARY)/modeBasedSrcPath(CompilerMode::PRIMARY).string()/g' legacy/lib/legacy/compiler.cpp
-          sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/compiler.cpp
-          sed -i 's/modeBasedSrcPath(compilerMode)/modeBasedSrcPath(compilerMode).string()/g' legacy/lib/legacy/compiler.cpp
-          sed -i 's/modeBasedSrcPath(CompilerMode::SECONDARY)/modeBasedSrcPath(CompilerMode::SECONDARY).string()/g' legacy/lib/legacy/decompiler.cpp
-          sed -i 's/modeBasedSrcPath(mode)/modeBasedSrcPath(mode).string()/g' legacy/lib/legacy/decompiler.cpp
-          sed -i 's/modeBasedSrcPath(mode)/modeBasedSrcPath(mode).string()/g' legacy/include/porytiles_context.h
+          import glob
+
+          error_path = "legacy/vendor/png++-0.2.9/error.hpp"
+          try:
+              with open(error_path, "r", encoding="utf-8") as f:
+                  content = f.read()
+              content = content.replace(
+                  "strerror_r(errnum, buf, ERRBUF_SIZE);",
+                  "strncpy(buf, strerror(errnum), ERRBUF_SIZE);"
+              )
+              with open(error_path, "w", encoding="utf-8") as f:
+                  f.write(content)
+              print("Parche de error.hpp aplicado con éxito.")
+          except FileNotFoundError:
+              print(f"No se encontró {error_path}")
+
+          for filepath in glob.glob("legacy/**/*.cpp", recursive=True) + glob.glob("legacy/**/*.h", recursive=True):
+              with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
+                  content = f.read()
+              
+              updated = content
+              updated = updated.replace("modeBasedSrcPath(CompilerMode::PRIMARY)", "modeBasedSrcPath(CompilerMode::PRIMARY).string()")
+              updated = updated.replace("modeBasedSrcPath(CompilerMode::SECONDARY)", "modeBasedSrcPath(CompilerMode::SECONDARY).string()")
+              updated = updated.replace("modeBasedSrcPath(compilerMode)", "modeBasedSrcPath(compilerMode).string()")
+              updated = updated.replace("modeBasedSrcPath(mode)", "modeBasedSrcPath(mode).string()")
+
+              if updated != content:
+                  with open(filepath, "w", encoding="utf-8") as f:
+                      f.write(updated)
+                  print(f"Parche de rutas aplicado en: {filepath}")
 
       - name: Configure CMake
         run: |
