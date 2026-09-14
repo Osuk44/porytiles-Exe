@@ -56,7 +56,7 @@ struct PorytilesContext {
                                          this->diag->Bold(fieldmapConfig.numTilesInPrimary),
                                          this->diag->Bold(fieldmapConfig.numTilesTotal));
             this->diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(*this, this->compilerSrcPaths.modeBasedSrcPath(mode),
+            die_compilationTerminated(*this, this->compilerSrcPaths.modeBasedSrcPath(mode).string(),
                                       fmt::format("invalid config numTiles: {} > {}", fieldmapConfig.numTilesInPrimary,
                                                   fieldmapConfig.numTilesTotal));
         }
@@ -66,7 +66,7 @@ struct PorytilesContext {
                             this->diag->Bold(fieldmapConfig.numMetatilesInPrimary),
                             this->diag->Bold(fieldmapConfig.numMetatilesTotal));
             this->diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(*this, this->compilerSrcPaths.modeBasedSrcPath(mode),
+            die_compilationTerminated(*this, this->compilerSrcPaths.modeBasedSrcPath(mode).string(),
                                       fmt::format("invalid config numMetatiles: {} > {}",
                                                   fieldmapConfig.numMetatilesInPrimary,
                                                   fieldmapConfig.numMetatilesTotal));
@@ -77,7 +77,7 @@ struct PorytilesContext {
                             this->diag->Bold(fieldmapConfig.numPalettesInPrimary),
                             this->diag->Bold(fieldmapConfig.numPalettesTotal));
             this->diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(*this, this->compilerSrcPaths.modeBasedSrcPath(mode),
+            die_compilationTerminated(*this, this->compilerSrcPaths.modeBasedSrcPath(mode).string(),
                                       fmt::format("invalid config numPalettes: {} > {}",
                                                   fieldmapConfig.numPalettesInPrimary,
                                                   fieldmapConfig.numPalettesTotal));
@@ -90,7 +90,7 @@ struct PorytilesContext {
                                          this->diag->Bold(fieldmapConfig.numTilesInPrimary),
                                          this->diag->Bold(fieldmapConfig.numTilesTotal));
             this->diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(*this, this->decompilerSrcPaths.modeBasedSrcPath(mode),
+            die_decompilationTerminated(*this, this->decompilerSrcPaths.modeBasedSrcPath(mode).string(),
                                         fmt::format("invalid config numTiles: {} > {}",
                                                     fieldmapConfig.numTilesInPrimary, fieldmapConfig.numTilesTotal));
         }
@@ -100,7 +100,7 @@ struct PorytilesContext {
                             this->diag->Bold(fieldmapConfig.numMetatilesInPrimary),
                             this->diag->Bold(fieldmapConfig.numMetatilesTotal));
             this->diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(*this, this->decompilerSrcPaths.modeBasedSrcPath(mode),
+            die_decompilationTerminated(*this, this->decompilerSrcPaths.modeBasedSrcPath(mode).string(),
                                         fmt::format("invalid config numMetatiles: {} > {}",
                                                     fieldmapConfig.numMetatilesInPrimary,
                                                     fieldmapConfig.numMetatilesTotal));
@@ -111,7 +111,7 @@ struct PorytilesContext {
                             this->diag->Bold(fieldmapConfig.numPalettesInPrimary),
                             this->diag->Bold(fieldmapConfig.numPalettesTotal));
             this->diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(*this, this->decompilerSrcPaths.modeBasedSrcPath(mode),
+            die_decompilationTerminated(*this, this->decompilerSrcPaths.modeBasedSrcPath(mode).string(),
                                         fmt::format("invalid config numPalettes: {} > {}",
                                                     fieldmapConfig.numPalettesInPrimary,
                                                     fieldmapConfig.numPalettesTotal));
