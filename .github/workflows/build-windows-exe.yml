@@ -136,19 +136,16 @@ jobs:
           else:
               print("\nOK: ningún modeBased* sin .string() pendiente")
 
-      - name: Vendor getopt for Windows
+      - name: Verify win-compat vendor files
         shell: pwsh
         run: |
-          $dir = "legacy/vendor/win-compat"
-          New-Item -ItemType Directory -Force -Path $dir | Out-Null
-          try {
-            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ChisholmKyle/WindowsPortable/master/src/getopt.h" -OutFile "$dir/getopt.h" -ErrorAction Stop
-            Invoke-WebRequest -Uri "https://raw.githubusercontent.com/ChisholmKyle/WindowsPortable/master/src/getopt.c" -OutFile "$dir/getopt.c" -ErrorAction Stop
-            Write-Host "=== getopt descargado ==="
-            Get-ChildItem $dir
-          } catch {
-            Write-Host "ERROR descargando getopt: $_"
-            throw
+          $files = @(
+            "legacy/vendor/win-compat/getopt.h",
+            "legacy/vendor/win-compat/getopt.c"
+          )
+          foreach ($f in $files) {
+            if (-not (Test-Path $f)) { throw "Falta $f" }
+            Write-Host "OK: $f ($((Get-Item $f).Length) bytes)"
           }
 
       - name: Configure CMake
