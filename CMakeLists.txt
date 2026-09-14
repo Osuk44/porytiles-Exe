@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.20)
 # Single source of truth for the version. CI and CMake both read this file.
 file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" PORYTILES_PROJECT_VERSION LIMIT_COUNT 1)
 
+option(PORYTILES_BUILD_DOCS "Build Porytiles documentation" ON)
+
 project(Porytiles VERSION ${PORYTILES_PROJECT_VERSION} LANGUAGES CXX)
 
 # Default the version stamp baked into both binaries. CI overrides via `cmake -DPORYTILES_BUILD_VERSION_=<snapshot-string>`.
@@ -79,4 +81,6 @@ endif ()
 
 add_subdirectory(legacy)
 add_subdirectory(porytiles)
-add_subdirectory(docs)
+if(PORYTILES_BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
