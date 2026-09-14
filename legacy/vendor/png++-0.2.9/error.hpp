@@ -100,19 +100,11 @@ namespace png
             strerror_s(buf, ERRBUF_SIZE, errnum);
             return std::string(buf);
 #else
-#if (_POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600) && !_GNU_SOURCE
-            strerror_r(errnum, buf, ERRBUF_SIZE);
+            /* Windows/MinGW: strerror_r is not available. Use strerror + strncpy
+             * with explicit null terminator. Original POSIX branches removed. */
+            std::strncpy(buf, std::strerror(errnum), ERRBUF_SIZE - 1);
+            buf[ERRBUF_SIZE - 1] = '\0';
             return std::string(buf);
-#else
-            /* GNU variant can return a pointer to static buffer instead of buf */
-            // GNU variant broken on Mac even though _GNU_SOURCE is defined, so just do it the boring way
-            // return std::string(strerror_r(errnum, buf, ERRBUF_SIZE));
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-result"
-            strerror_r(errnum, buf, ERRBUF_SIZE);
-#pragma GCC diagnostic pop
-            return std::string(buf);
-#endif
 #endif
 
 #undef ERRBUF_SIZE
