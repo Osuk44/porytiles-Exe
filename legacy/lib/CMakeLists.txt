@@ -100,6 +100,8 @@ endif()
 
 # Windows: getopt shim (getopt.h / getopt.c provided by win-compat)
 if(WIN32)
+    # Enable C so we can compile getopt.c (project only declares CXX)
+    enable_language(C)
     target_include_directories(LegacyLib PRIVATE ${CMAKE_SOURCE_DIR}/legacy/vendor/win-compat)
     if(EXISTS ${CMAKE_SOURCE_DIR}/legacy/vendor/win-compat/getopt.c)
         target_sources(LegacyLib PRIVATE ${CMAKE_SOURCE_DIR}/legacy/vendor/win-compat/getopt.c)
