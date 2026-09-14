@@ -548,7 +548,7 @@ static std::vector<RGBATile> preparePalettePrimersForImport(PorytilesContext &ct
 
         std::ifstream fileStream{primerFile};
         pt_logln(ctx, stderr, "found palette primer file {}", primerFile.string());
-        RGBATile primerTile = importPalettePrimer(ctx, compilerMode, fileStream, fullPrimerFilename);
+        RGBATile primerTile = importPalettePrimer(ctx, compilerMode, fileStream, fullPrimerFilename.string());
         primerTile.primerFilename =
             fullPrimerFilename.lexically_relative(ctx.compilerSrcPaths.modeBasedPalettePrimerPath(compilerMode))
                 .string();
@@ -608,7 +608,7 @@ preparePaletteOverridesForImport(PorytilesContext &ctx, const CompilerMode compi
         std::size_t overridePaletteIndex{};
         try {
             const auto stem = overrideFile.stem();
-            overridePaletteIndex = parseInteger<std::size_t>(stem.c_str(), 10);
+            overridePaletteIndex = parseInteger<std::size_t>(stem.string().c_str(), 10);
         } catch ([[maybe_unused]] const std::exception &e) {
             Panic("driver::preparePaletteOverridesForImport parseInteger with invalid pal override file name");
         }
@@ -637,7 +637,7 @@ preparePaletteOverridesForImport(PorytilesContext &ctx, const CompilerMode compi
         std::ifstream fileStream{overrideFile};
         pt_logln(ctx, stderr, "found palette override file {}", overrideFile.string());
         auto [overrideTile, overriddenPalSlots] =
-            importPaletteOverride(ctx, compilerMode, fileStream, fullOverrideFilename);
+            importPaletteOverride(ctx, compilerMode, fileStream, fullOverrideFilename.string());
         overrideTile.overrideFilename =
             fullOverrideFilename.lexically_relative(ctx.compilerSrcPaths.modeBasedPaletteOverridePath(compilerMode))
                 .string();

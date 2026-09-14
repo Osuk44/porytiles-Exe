@@ -59,7 +59,7 @@ target_include_directories(LegacyLib INTERFACE ${PORYTILES_LEGACY_INCLUDE_DIR} P
 target_include_directories(LegacyLib SYSTEM PUBLIC ${PNG_INCLUDE_DIRS})
 
 # Mark public any includes our interface exposes.
-target_include_directories(LegacyLib PUBLIC ${CMAKE_SOURCE_DIR}/legacy/vendor/png++-0.2.9)
+target_include_directories(LegacyLib SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/legacy/vendor/png++-0.2.9)
 
 # Disable doctest
 target_compile_definitions(LegacyLib PRIVATE DOCTEST_CONFIG_DISABLE)
@@ -87,3 +87,21 @@ target_link_libraries(LegacyLib PUBLIC Microsoft.GSL::GSL)
 
 # Export the library.
 export(TARGETS LegacyLib FILE ${CMAKE_CURRENT_BINARY_DIR}/LegacyLibraryTargets.cmake)
+
+# MSVC-specific: silence CRT deprecation warnings and legacy code warnings
+if(MSVC)
+    target_compile_definitions(LegacyLib PRIVATE _CRT_SECURE_NO_WARNINGS)
+    target_compile_options(LegacyLib PRIVATE
+        /wd4458  # declaration hides class member
+        /wd4244  # possible loss of data (double -> size_t)
+        /wd4267  # size_t -> smaller type
+    )
+endif()
+
+# Windows: getopt shim (getopt.h / getopt.c provided by win-compat)
+if(WIN32)
+    target_include_directories(LegacyLib PRIVATE ${CMAKE_SOURCE_DIR}/legacy/vendor/win-compat)
+    if(EXISTS ${CMAKE_SOURCE_DIR}/legacy/vendor/win-compat/getopt.c)
+        target_sources(LegacyLib PRIVATE ${CMAKE_SOURCE_DIR}/legacy/vendor/win-compat/getopt.c)
+    endif()
+endif()

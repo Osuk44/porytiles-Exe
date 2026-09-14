@@ -4,7 +4,7 @@
 #include <ranges>
 #include <sstream>
 #include <type_traits>
-#include <unistd.h>
+// Windows compatibility: unistd.h not available in MSVC
 #include <unordered_set>
 
 #include "diagnostics//diagnostic_engine.hpp"
