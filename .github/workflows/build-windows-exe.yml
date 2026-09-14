@@ -2,10 +2,23 @@ name: Build Windows Binary
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - windows-compat
+      - develop
+      - main
+
+permissions:
+  contents: read
 
 jobs:
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
+    timeout-minutes: 45
+
+    env:
+      VCPKG_DEFAULT_TRIPLET: x64-windows-static
+      PYTHONUTF8: "1"
 
     steps:
       - name: Checkout repository
@@ -13,66 +26,93 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Ninja & UV
-        run: choco install ninja uv
+      - name: Set up MSVC developer environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Set up Ninja
+        uses: seanmiddleditch/gha-setup-ninja@v5
+
+      - name: Restore vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('.github/workflows/build-windows-exe.yml') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
 
       - name: Install static dependencies via vcpkg
-        run: vcpkg install libpng:x64-windows-static zlib:x64-windows-static
+        shell: pwsh
+        run: |
+          $cacheRoot = "${{ github.workspace }}/vcpkg-cache"
+          New-Item -ItemType Directory -Force -Path $cacheRoot | Out-Null
+          vcpkg install `
+            libpng:x64-windows-static `
+            zlib:x64-windows-static `
+            --x-install-root="$cacheRoot"
+
+          # Diagnóstico: listar las libs que vcpkg realmente produjo
+          Write-Host "=== Contenido de $cacheRoot/x64-windows-static/lib ==="
+          Get-ChildItem "$cacheRoot/x64-windows-static/lib" | Select-Object Name, Length
 
       - name: Apply Windows compatibility patches
         shell: python
         run: |
-          import glob, re
+          import glob, re, sys, pathlib
 
-          # 1. png++: strerror_r (POSIX) no existe en MinGW
-          p = "legacy/vendor/png++-0.2.9/error.hpp"
-          try:
-              s = open(p, encoding="utf-8").read()
-              s2 = s.replace("strerror_r(errnum, buf, ERRBUF_SIZE);",
-                             "strncpy(buf, strerror(errnum), ERRBUF_SIZE);")
+          def patch(path, replacements, label):
+              p = pathlib.Path(path)
+              if not p.exists():
+                  return
+              s = p.read_text(encoding="utf-8", errors="ignore")
+              s2 = s
+              for old, new in replacements:
+                  s2 = s2.replace(old, new)
               if s2 != s:
-                  open(p, "w", encoding="utf-8").write(s2); print("error.hpp parcheado")
-          except FileNotFoundError:
-              pass
+                  p.write_text(s2, encoding="utf-8")
+                  print(f"[patched] {label}: {path}")
 
-          # 1.5. fast-cpp-csv-parser: evitar stringop-truncation en strncpy
-          csv_path = "legacy/vendor/fast-cpp-csv-parser/csv.h"
-          try:
-              with open(csv_path, "r", encoding="utf-8") as f:
-                  csv_content = f.read()
-              csv_content = csv_content.replace(
-                  "strncpy(this->file_name, file_name, sizeof(this->file_name));",
-                  "std::strncpy(this->file_name, file_name, sizeof(this->file_name) - 1); this->file_name[sizeof(this->file_name) - 1] = '\\0';"
-              )
-              with open(csv_path, "w", encoding="utf-8") as f:
-                  f.write(csv_content)
-              print("Parche de fast-cpp-csv-parser aplicado con éxito.")
-          except FileNotFoundError:
-              pass
+          # 1. png++: strerror_r (POSIX) no existe en MSVC/MinGW. No-op si ya está parcheado.
+          patch("legacy/vendor/png++-0.2.9/error.hpp", [
+              ("strerror_r(errnum, buf, ERRBUF_SIZE);",
+               "std::strncpy(buf, std::strerror(errnum), ERRBUF_SIZE - 1); buf[ERRBUF_SIZE - 1] = '\\0';"),
+          ], "png++ strerror")
+
+          # 1.5. fast-cpp-csv-parser: strncpy sin terminador explícito
+          patch("legacy/vendor/fast-cpp-csv-parser/csv.h", [
+              ("strncpy(this->file_name, file_name, sizeof(this->file_name));",
+               "std::strncpy(this->file_name, file_name, sizeof(this->file_name) - 1); this->file_name[sizeof(this->file_name) - 1] = '\\0';"),
+          ], "csv strncpy")
 
           # 2. .string() en TODO getter modeBased* usado como argumento.
+          #    Lookahead [,)}] excluye declaraciones (;) y definiciones ({ const...).
+          #    Idempotente: si ya hay .string(), no re-matchea.
           pat = re.compile(r'\b(modeBased\w+)\(([^()]*)\)(?=\s*[,)}])')
           for f in glob.glob("legacy/**/*.h", recursive=True) + glob.glob("legacy/**/*.cpp", recursive=True):
-              s = open(f, encoding="utf-8", errors="ignore").read()
+              p = pathlib.Path(f)
+              s = p.read_text(encoding="utf-8", errors="ignore")
               s2, n = pat.subn(r'\1(\2).string()', s)
               if s2 != s:
-                  open(f, "w", encoding="utf-8").write(s2); print(f"{f}: {n} sitios")
+                  p.write_text(s2, encoding="utf-8")
+                  print(f"[patched] modeBased .string(): {f} ({n} sitios)")
 
-          # 2.5. Corregir inserciones en mapas usando std::make_pair para compatibilidad con GCC 15
+          # 2.5. Corregir inserciones en mapas (GCC 15 / C++23)
           for filepath in glob.glob("legacy/**/*.cpp", recursive=True) + glob.glob("legacy/**/*.h", recursive=True):
-              with open(filepath, "r", encoding="utf-8", errors="ignore") as f:
-                  content = f.read()
-              updated = re.sub(r'\.insert\s*\(\s*\{\s*([^,]+),\s*([^}]+)\}\s*\)', r'.insert(std::make_pair(\1, \2))', content)
+              p = pathlib.Path(filepath)
+              content = p.read_text(encoding="utf-8", errors="ignore")
+              updated = re.sub(r'\.insert\s*\(\s*\{\s*([^,]+),\s*([^}]+)\}\s*\)',
+                               r'.insert(std::make_pair(\1, \2))', content)
               if updated != content:
-                  with open(filepath, "w", encoding="utf-8") as f:
-                      f.write(updated)
-                  print(f"Parche de unordered_map aplicado en: {filepath}")
+                  p.write_text(updated, encoding="utf-8")
+                  print(f"[patched] unordered_map insert: {filepath}")
 
-          # 3. Sitios manuales en driver.cpp (variables, no llamadas)
-          drv = "legacy/lib/legacy/driver.cpp"
-          try:
-              s = open(drv, encoding="utf-8", errors="ignore").read()
-              reps = [
+          # 3. Sitios manuales en driver.cpp (no-ops si ya están parcheados)
+          drv = pathlib.Path("legacy/lib/legacy/driver.cpp")
+          if drv.exists():
+              s = drv.read_text(encoding="utf-8", errors="ignore")
+              s2 = s
+              for old, new in [
                   ("png{frames.at(i)}", "png{frames.at(i).string()}"),
                   ("tilesPng.write(tilesetPath);", "tilesPng.write(tilesetPath.string());"),
                   ("frame.write(framePngPath);", "frame.write(framePngPath.string());"),
@@ -81,37 +121,74 @@ jobs:
                   ("topPng.write(topPath);", "topPng.write(topPath.string());"),
                   ("paletteFileNames.emplace_back(paletteFile.c_str());",
                    "paletteFileNames.emplace_back(paletteFile.string());"),
-              ]
-              for a, b in reps:
-                  s = s.replace(a, b)
-              open(drv, "w", encoding="utf-8").write(s)
-          except FileNotFoundError:
-              pass
+              ]:
+                  s2 = s2.replace(old, new)
+              if s2 != s:
+                  drv.write_text(s2, encoding="utf-8")
+                  print("[patched] driver.cpp manual sites")
 
-          # 4. Auditoría: lista lo que quedó sin .string() para revisión
+          # 4. Auditoría final (informativa, no falla el build)
+          remaining = []
           for f in glob.glob("legacy/**/*.h", recursive=True) + glob.glob("legacy/**/*.cpp", recursive=True):
-              for i, line in enumerate(open(f, encoding="utf-8", errors="ignore"), 1):
+              for i, line in enumerate(pathlib.Path(f).read_text(encoding="utf-8", errors="ignore").splitlines(), 1):
                   if re.search(r'modeBased\w+\(', line) and ".string()" not in line:
-                      print(f"REVISAR {f}:{i}: {line.strip()}")
+                      remaining.append(f"{f}:{i}: {line.strip()}")
+          if remaining:
+              print("\n=== Sitios restantes sin .string() (revisar) ===")
+              for r in remaining[:50]:
+                  print(r)
+              if len(remaining) > 50:
+                  print(f"... y {len(remaining) - 50} más")
+          else:
+              print("\nOK: ningún modeBased* sin .string() pendiente")
 
       - name: Configure CMake
+        shell: pwsh
         run: |
+          $vcpkgRoot = "${{ github.workspace }}/vcpkg-cache"
+          $libDir    = "$vcpkgRoot/x64-windows-static/lib"
+
           cmake -B build -G Ninja `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DVCPKG_TARGET_TRIPLET=x64-windows-static `
+            -DVCPKG_INSTALLED_DIR="$vcpkgRoot" `
             -DCMAKE_BUILD_TYPE=Release `
             -DBUILD_TESTING=OFF `
             -DPORYTILES_BUILD_DOCS=OFF `
-            -DPNG_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/libpng16.lib" `
-            -DZLIB_STATIC="$env:VCPKG_INSTALLATION_ROOT/installed/x64-windows-static/lib/zs.lib"
+            -DPNG_STATIC="$libDir/libpng16.lib" `
+            -DZLIB_STATIC="$libDir/zlib.lib"
 
       - name: Build Porytiles
-        env:
-          PYTHONUTF8: "1"
+        shell: pwsh
         run: cmake --build build --config Release
+
+      - name: Verify binary
+        shell: pwsh
+        run: |
+          if (-not (Test-Path build\porytiles.exe)) {
+            Write-Host "=== porytiles.exe no encontrado, listando .exe en build/ ==="
+            Get-ChildItem -Recurse build\ -Include *.exe,*.dll | Format-Table -AutoSize
+            throw "Build falló: porytiles.exe no existe"
+          }
+          Get-Item build\porytiles.exe | Format-List Name, Length, LastWriteTime
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
         with:
           name: porytiles-windows-exe
           path: build/porytiles.exe
+          retention-days: 30
+
+      - name: Job summary
+        if: always()
+        shell: pwsh
+        run: |
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "## Porytiles Windows Build"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value ""
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- **Branch**: ``${{ github.ref_name }}``"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- **Commit**: ``${{ github.sha }}``"
+          Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- **Runner**: ``${{ runner.os }}``"
+          if (Test-Path build\porytiles.exe) {
+            $size = [math]::Round((Get-Item build\porytiles.exe).Length / 1MB, 2)
+            Add-Content -Path $env:GITHUB_STEP_SUMMARY -Value "- **Binary**: ``build/porytiles.exe`` ($size MB)"
+          }
