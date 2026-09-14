@@ -98,6 +98,7 @@ if(MSVC)
         /wd4267  # size_t -> smaller type
         /wd4458  # declaration hides class member
         /wd4459  # declaration hides global declaration (optarg/optind)
+        /wd4702  # unreachable code (throw after Panic, which is [[noreturn]])
     )
 endif()
 
