@@ -34,6 +34,11 @@ jobs:
       - name: Set up Ninja
         uses: seanmiddleditch/gha-setup-ninja@v5
 
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: false
+
       - name: Restore vcpkg cache
         uses: actions/cache@v4
         with:
@@ -145,7 +150,7 @@ jobs:
             -DBUILD_TESTING=OFF `
             -DPORYTILES_BUILD_DOCS=OFF `
             -DPNG_STATIC="$libDir/libpng16.lib" `
-            -DZLIB_STATIC="$libDir/zlib.lib"
+            -DZLIB_STATIC="$libDir/zs.lib"
 
       - name: Build Porytiles
         shell: pwsh
