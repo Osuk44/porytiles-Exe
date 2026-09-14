@@ -90,12 +90,12 @@ static RGBA32 parseJascLine(PorytilesContext &ctx, const CompilerMode *compilerM
         if (compilerMode != nullptr) {
             const auto msg = fmt::format("expected valid JASC line in pal file {}, saw {}", fileName, jascLine);
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode).string(), msg);
         }
         if (decompilerMode != nullptr) {
             const auto msg = fmt::format("expected valid JASC line in pal file {}, saw {}", fileName, jascLine);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode).string(), msg);
         }
         Panic("utilities::parseJascLine both mode parameters were null");
     }
@@ -121,12 +121,12 @@ static RGBA32 parseJascLine(PorytilesContext &ctx, const CompilerMode *compilerM
         if (compilerMode != nullptr) {
             const auto msg = fmt::format("{}: invalid red component: range must be 0 <= red <= 255", fileName);
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode).string(), msg);
         }
         if (decompilerMode != nullptr) {
             const auto msg = fmt::format("{}: invalid red component: range must be 0 <= red <= 255", fileName);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode).string(), msg);
         }
         Panic("utilities::parseJascLine both mode parameters were null");
     }
@@ -137,12 +137,12 @@ static RGBA32 parseJascLine(PorytilesContext &ctx, const CompilerMode *compilerM
         if (compilerMode != nullptr) {
             const auto msg = fmt::format("{}: invalid green component: range must be 0 <= green <= 255", fileName);
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode).string(), msg);
         }
         if (decompilerMode != nullptr) {
             const auto msg = fmt::format("{}: invalid green component: range must be 0 <= green <= 255", fileName);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode).string(), msg);
         }
         Panic("utilities::parseJascLine both mode parameters were null");
     }
@@ -153,12 +153,12 @@ static RGBA32 parseJascLine(PorytilesContext &ctx, const CompilerMode *compilerM
         if (compilerMode != nullptr) {
             const auto msg = fmt::format("{}: invalid blue component: range must be 0 <= blue <= 255", fileName);
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode).string(), msg);
         }
         if (decompilerMode != nullptr) {
             const auto msg = fmt::format("{}: invalid blue component: range must be 0 <= blue <= 255", fileName);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode).string(), msg);
         }
         Panic("utilities::parseJascLine both mode parameters were null");
     }

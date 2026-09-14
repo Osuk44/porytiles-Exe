@@ -333,7 +333,7 @@ void emitDecompiled(PorytilesContext &ctx, DecompilerMode mode, png::image<png::
     }
 
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode),
+        die_errorCount(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(),
                        "behavior value did not have reverse mapping");
     }
 }
@@ -432,7 +432,7 @@ TEST_CASE("emitTilesPng should emit the expected tiles.png file") {
 
     porytiles_legacy::emitTilesPng(ctx, outPng, *compiledPrimary);
     std::filesystem::path pngTmpPath = porytiles_legacy::getTmpfilePath(parentDir, "emitTilesPng_test.png");
-    outPng.write(pngTmpPath);
+    outPng.write(pngTmpPath.string());
 
     png::image<png::index_pixel> tilesetPng{pngTmpPath};
     png::image<png::index_pixel> expectedPng{"resources/doctests/simple_metatiles_2/primary/expected_tiles.png"};

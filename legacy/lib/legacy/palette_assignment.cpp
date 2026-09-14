@@ -387,7 +387,7 @@ static auto tryAssignment(PorytilesContext &ctx, const CompilerMode compilerMode
         if (printErrors) {
             const auto msg = "no possible palette assignment exists, given the current assign search params";
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminatedFailHard(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode));
+            die_compilationTerminatedFailHard(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string());
         }
         return std::make_tuple(false, assignedPalsSolution, primaryPaletteColorSets);
     }
@@ -396,7 +396,7 @@ static auto tryAssignment(PorytilesContext &ctx, const CompilerMode compilerMode
             const auto msg = fmt::format("{} palette assignment exploration reached node cutoff",
                                          assignAlgorithmString(assignAlgorithm));
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminatedFailHard(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode));
+            die_compilationTerminatedFailHard(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string());
         }
         return std::make_tuple(false, assignedPalsSolution, primaryPaletteColorSets);
     }
@@ -511,7 +511,7 @@ runPaletteAssignmentMatrix(PorytilesContext &ctx, CompilerMode compilerMode, con
     }
     // If we got here, the matrix failed, print a sad message
     ctx.diag->Report(FatalGeneric, "palette assignment parameter search matrix failed to find any suitable parameters");
-    die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+    die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                               fmt::format("palette assign param search matrix failed"));
 }
 

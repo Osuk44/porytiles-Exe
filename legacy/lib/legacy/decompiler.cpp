@@ -99,7 +99,7 @@ std::unique_ptr<DecompiledTileset> decompile(PorytilesContext &ctx, DecompilerMo
         ctx.diag->Report(FatalGeneric, "no layer type was implied by the supplied metatiles and attributes");
         ctx.diag->Report(NoteGeneric,
                          "either you forgot to supply the correct `-target-base-game' option, or a file is corrupted");
-        die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode),
+        die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(),
                                     fmt::format("no implied layer type"));
     }
 
@@ -182,7 +182,7 @@ std::unique_ptr<DecompiledTileset> decompile(PorytilesContext &ctx, DecompilerMo
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
         const auto msg = "errors encountered while decompiling tileset";
         ctx.diag->Report(FatalGeneric, msg);
-        die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+        die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
     }
 
     return decompiledTileset;

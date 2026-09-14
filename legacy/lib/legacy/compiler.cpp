@@ -307,7 +307,7 @@ normalizeDecompTiles(PorytilesContext &ctx, CompilerMode compilerMode, const Dec
     }
 
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                        "errors generated during tile normalization");
     }
 
@@ -402,7 +402,7 @@ buildColorIndexMaps(const PorytilesContext &ctx, const CompilerMode compilerMode
                          fmt::format("too many unique colors in {} tileset", compilerModeString(compilerMode)));
         ctx.diag->Report(NoteGeneric, fmt::format("{} allowed based on fieldmap configuration, but found {}",
                                                   ctx.diag->Bold(size), ctx.diag->Bold(colorIndex)));
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                   "too many unique colors total");
     }
 
@@ -551,7 +551,7 @@ static void assignTilesPrimary(PorytilesContext &ctx, CompiledTileset &compiled,
                 "this is not allowed, since there would be no way to tell if a transparent user-provided tile on the "
                 "layer sheet referred to the true index 0 transparent tile, or if it was a reference into this "
                 "particular animation");
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY).string(),
                                       fmt::format("animation {} had a transparent key frame tile", normTile.anim));
         }
 
@@ -578,7 +578,7 @@ static void assignTilesPrimary(PorytilesContext &ctx, CompiledTileset &compiled,
             ctx.diag->Report(
                 NoteGeneric,
                 "key frame tiles must be unique within a tileset, and unique across any paired primary tileset");
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY).string(),
                                       fmt::format("animation {} had a duplicate key frame tile", normTile.anim));
         } else {
             Panic("compiler::assignTilesPrimary third key tile insertion branch, should be unreachable");
@@ -653,13 +653,13 @@ static void assignTilesPrimary(PorytilesContext &ctx, CompiledTileset &compiled,
                         ctx.diag->Bold(ctx.fieldmapConfig.numTilesInPrimary));
         ctx.diag->Report(FatalGeneric, msg);
         die_compilationTerminated(
-            ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY),
+            ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY).string(),
             fmt::format("too many unique tiles in {} tileset", compilerModeString(CompilerMode::PRIMARY)));
     }
 
     // exit if there were any other errors
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::PRIMARY).string(),
                        "errors generated during primary tile assignment");
     }
 }
@@ -719,7 +719,7 @@ static void assignTilesSecondary(PorytilesContext &ctx, CompiledTileset &compile
                     "the "
                     "layer sheet referred to the true index 0 transparent tile, or if it was a reference into this "
                     "particular animation");
-                die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY),
+                die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY).string(),
                                           fmt::format("animation {} had a transparent key frame tile", normTile.anim));
             } else {
                 /*
@@ -737,7 +737,7 @@ static void assignTilesSecondary(PorytilesContext &ctx, CompiledTileset &compile
                     "this is an error because it renders the animation inoperable, any reference to the key tile in "
                     "the secondary layer sheet will be linked to primary tileset instead of the intended animation");
                 die_compilationTerminated(
-                    ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY),
+                    ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY).string(),
                     fmt::format("animation {} key frame tile present in paired primary", normTile.anim));
             }
         }
@@ -765,7 +765,7 @@ static void assignTilesSecondary(PorytilesContext &ctx, CompiledTileset &compile
             ctx.diag->Report(
                 NoteGeneric,
                 "key frame tiles must be unique within a tileset, and unique across any paired primary tileset");
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY).string(),
                                       fmt::format("animation {} had a duplicate key frame tile", normTile.anim));
         } else {
             Panic("compiler::assignTilesSecondary third key tile insertion branch, should be unreachable");
@@ -848,13 +848,13 @@ static void assignTilesSecondary(PorytilesContext &ctx, CompiledTileset &compile
                         ctx.diag->Bold(ctx.fieldmapConfig.numTilesInSecondary()));
         ctx.diag->Report(FatalGeneric, msg);
         die_compilationTerminated(
-            ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY),
+            ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY).string(),
             fmt::format("too many unique tiles in {} tileset", compilerModeString(CompilerMode::SECONDARY)));
     }
 
     // exit if there were any other errors
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(CompilerMode::SECONDARY).string(),
                        "errors generated during secondary tile assignment");
     }
 }
@@ -998,7 +998,7 @@ compile(PorytilesContext &ctx, CompilerMode compilerMode, const DecompiledTilese
                                          ctx.diag->Bold(srcMetatileCount), compilerModeString(compilerMode),
                                          ctx.diag->Bold(ctx.fieldmapConfig.numMetatilesInPrimary));
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                       fmt::format("too many {} metatiles: {} > {}", compilerModeString(compilerMode),
                                                   srcMetatileCount, ctx.fieldmapConfig.numMetatilesInPrimary));
         }
@@ -1010,7 +1010,7 @@ compile(PorytilesContext &ctx, CompilerMode compilerMode, const DecompiledTilese
                                          ctx.diag->Bold(srcMetatileCount), compilerModeString(compilerMode),
                                          ctx.diag->Bold(ctx.fieldmapConfig.numMetatilesInSecondary()));
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                       fmt::format("too many {} metatiles: {} > {}", compilerModeString(compilerMode),
                                                   srcMetatileCount, ctx.fieldmapConfig.numMetatilesInSecondary()));
         }

@@ -40,7 +40,7 @@ DecompiledTileset importTilesFromPng(PorytilesContext &ctx, CompilerMode compile
     }
 
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                        "freestanding source dimension not divisible by 8");
     }
 
@@ -160,7 +160,7 @@ DecompiledTileset importLayeredTilesFromPngs(PorytilesContext &ctx, CompilerMode
     }
 
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), "source layer png dimensions invalid");
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), "source layer png dimensions invalid");
     }
 
     DecompiledTileset decompiledTiles{};
@@ -188,7 +188,7 @@ DecompiledTileset importLayeredTilesFromPngs(PorytilesContext &ctx, CompilerMode
             const auto msg = fmt::format("supplied default behavior '{}' was not valid",
                                          ctx.diag->Bold(ctx.compilerConfig.defaultBehavior));
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
         }
         try {
             std::uint8_t encounterValue = parseInteger<std::uint16_t>(ctx.compilerConfig.defaultEncounterType.c_str());
@@ -198,7 +198,7 @@ DecompiledTileset importLayeredTilesFromPngs(PorytilesContext &ctx, CompilerMode
             const auto msg = fmt::format("supplied default EncounterType '{}' was not valid",
                                          ctx.diag->Bold(ctx.compilerConfig.defaultEncounterType));
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
         }
         try {
             std::uint8_t terrainValue = parseInteger<std::uint16_t>(ctx.compilerConfig.defaultTerrainType.c_str());
@@ -208,7 +208,7 @@ DecompiledTileset importLayeredTilesFromPngs(PorytilesContext &ctx, CompilerMode
             const auto msg = fmt::format("supplied default TerrainType '{}' was not valid",
                                          ctx.diag->Bold(ctx.compilerConfig.defaultTerrainType));
             ctx.diag->Report(FatalGeneric, msg);
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
         }
 
         // Attributes are per-metatile so we can compute them once here
@@ -382,7 +382,7 @@ DecompiledTileset importLayeredTilesFromPngs(PorytilesContext &ctx, CompilerMode
     }
 
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                        "errors generated during layered tile import");
     }
 
@@ -470,7 +470,7 @@ void importAnimTiles(PorytilesContext &ctx, CompilerMode compilerMode,
             }
 
             if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-                die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+                die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                "anim frame source dimension not divisible by 8");
             }
 
@@ -482,7 +482,7 @@ void importAnimTiles(PorytilesContext &ctx, CompilerMode compilerMode,
                                              ctx.diag->Bold(rawFrame.animName), ctx.diag->Bold(rawFrame.frameName),
                                              dimensionName, ctx.diag->Bold(rawFrame.png.get_width()), dimensionName);
                 ctx.diag->Report(FatalGeneric, msg);
-                die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+                die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                           fmt::format("anim {} frame {} dimension {} mismatch", rawFrame.animName,
                                                       rawFrame.frameName, dimensionName));
             }
@@ -492,7 +492,7 @@ void importAnimTiles(PorytilesContext &ctx, CompilerMode compilerMode,
                                              ctx.diag->Bold(rawFrame.animName), ctx.diag->Bold(rawFrame.frameName),
                                              dimensionName, ctx.diag->Bold(rawFrame.png.get_height()), dimensionName);
                 ctx.diag->Report(FatalGeneric, msg);
-                die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+                die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                           fmt::format("anim {} frame {} dimension {} mismatch", rawFrame.animName,
                                                       rawFrame.frameName, dimensionName));
             }
@@ -526,7 +526,7 @@ void importAnimTiles(PorytilesContext &ctx, CompilerMode compilerMode,
 
     if (ctx.diag->EnabledAt(WarnKeyFrameMissingColors) == DiagLevel::Error &&
         ctx.diag->InFlightCountFor(WarnKeyFrameMissingColors) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                        "some key frame subtiles were missing essential colors");
     }
     tiles.anims = anims;
@@ -555,7 +555,7 @@ static std::uint8_t parseMacroFormatLine(PorytilesContext &ctx, std::ifstream &b
                 NoteGeneric,
                 "behavior must be an integral value (both decimal and hexadecimal notations are permitted)",
                 ctx.diag->Bold("id"));
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(*compilerMode).string(),
                                       fmt::format("invalid behavior value {}", behaviorValueString));
         }
         if (decompilerMode != nullptr) {
@@ -567,7 +567,7 @@ static std::uint8_t parseMacroFormatLine(PorytilesContext &ctx, std::ifstream &b
                 NoteGeneric,
                 "behavior must be an integral value (both decimal and hexadecimal notations are permitted)",
                 ctx.diag->Bold("id"));
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode),
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(*decompilerMode).string(),
                                         fmt::format("invalid behavior value {}", behaviorValueString));
         }
         Panic("importer::importMetatileBehaviorHeader both compilerMode and decompilerMode were null");
@@ -647,7 +647,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
         ctx.diag->Report(FatalGeneric, msg);
         ctx.diag->Report(NoteGeneric, fmt::format("valid headers are '{}' or '{}'", ctx.diag->Bold("id,behavior"),
                                                   ctx.diag->Bold("id,behavior,terrainType,encounterType")));
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                   fmt::format("{}: incorrect header row format", filePath));
     }
 
@@ -668,7 +668,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
         ctx.diag->Report(FatalGeneric, msg);
         ctx.diag->Report(NoteGeneric, fmt::format("valid headers are '{}' or '{}'", ctx.diag->Bold("id,behavior"),
                                                   ctx.diag->Bold("id,behavior,terrainType,encounterType")));
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                   fmt::format("{}: incorrect header row format", filePath));
     }
 
@@ -695,7 +695,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
         const auto msg = fmt::format("supplied default behavior '{}' was not valid",
                                      ctx.diag->Bold(ctx.compilerConfig.defaultBehavior));
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     try {
         std::uint8_t encounterValue = parseInteger<std::uint16_t>(ctx.compilerConfig.defaultEncounterType.c_str());
@@ -705,7 +705,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
         const auto msg = fmt::format("supplied default EncounterType '{}' was not valid",
                                      ctx.diag->Bold(ctx.compilerConfig.defaultEncounterType));
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     try {
         std::uint8_t terrainValue = parseInteger<std::uint16_t>(ctx.compilerConfig.defaultTerrainType.c_str());
@@ -715,7 +715,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
         const auto msg = fmt::format("supplied default TerrainType '{}' was not valid",
                                      ctx.diag->Bold(ctx.compilerConfig.defaultTerrainType));
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
 
     // processedUpToLine starts at 1 since we processed the header already, which was on line 1
@@ -788,7 +788,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
                 NoteGeneric,
                 "column '{}' must contain an integral value (both decimal and hexadecimal notations are permitted)",
                 ctx.diag->Bold("id"));
-            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+            die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                                       fmt::format("{}: invalid id {}", filePath, id));
         }
 
@@ -805,7 +805,7 @@ importAttributesFromCsv(PorytilesContext &ctx, CompilerMode compilerMode,
     }
 
     if (ctx.diag->InFlightCountForLevel(DiagLevel::Error) > 0) {
-        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode),
+        die_errorCount(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(),
                        "errors generated during attributes CSV parsing");
     }
 
@@ -833,39 +833,39 @@ static std::vector<GBAPalette> importCompiledPalettes(PorytilesContext &ctx, Dec
         if (line.size() == 0) {
             const auto msg = "invalid blank line in pal file";
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode).string(), msg);
         }
         line.pop_back();
         if (line != "JASC-PAL") {
             const auto msg = fmt::format("expected `JASC-PAL' in pal file, saw '{}'", line);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode).string(), msg);
         }
 
         std::getline(*stream, line);
         if (line.size() == 0) {
             const auto msg = "invalid blank line in pal file";
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode).string(), msg);
         }
         line.pop_back();
         if (line != "0100") {
             const auto msg = fmt::format("expected `0100' in pal file, saw '{}'", line);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode).string(), msg);
         }
 
         std::getline(*stream, line);
         if (line.size() == 0) {
             const auto msg = "invalid blank line in pal file";
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode).string(), msg);
         }
         line.pop_back();
         if (line != "16") {
             const auto msg = fmt::format("expected `16' in pal file, saw '{}'", line);
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(decompilerMode).string(), msg);
         }
 
         GBAPalette palette{};
@@ -925,7 +925,7 @@ importCompiledMetatiles(PorytilesContext &ctx, DecompilerMode mode, std::ifstrea
         metatileDataBuf.size() % (BYTES_PER_METATILE_ENTRY * TILES_PER_METATILE_TRIPLE) != 0) {
         const auto msg = "decompiler input 'metatiles.bin' corrupted, not valid uint16 data";
         ctx.diag->Report(FatalGeneric, msg);
-        die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+        die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
     }
 
     bool tripleLayer =
@@ -997,14 +997,14 @@ importCompiledMetatileAttributes(PorytilesContext &ctx, DecompilerMode mode, std
         if (attributesDataBuf.size() % BYTES_PER_ATTRIBUTE_FIRERED != 0) {
             const auto msg = "decompiler input 'metatile_attributes.bin' corrupted, not valid uint32 data";
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
         }
         metatileCount = attributesDataBuf.size() / BYTES_PER_ATTRIBUTE_FIRERED;
     } else {
         if (attributesDataBuf.size() % BYTES_PER_ATTRIBUTE_EMERALD != 0) {
             const auto msg = "decompiler input 'metatile_attributes.bin' corrupted, not valid uint16 data";
             ctx.diag->Report(FatalGeneric, msg);
-            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+            die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
         }
         metatileCount = attributesDataBuf.size() / BYTES_PER_ATTRIBUTE_EMERALD;
     }
@@ -1096,14 +1096,14 @@ importCompiledAnimations(PorytilesContext &ctx, DecompilerMode mode,
                                              ctx.diag->Bold(compiledAnim.animName), ctx.diag->Bold(animFrame.frameName),
                                              ctx.diag->Bold(animPng.png.get_width()));
                 ctx.diag->Report(FatalGeneric, msg);
-                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
             }
             if (animPng.png.get_height() % TILE_SIDE_LENGTH_PIX != 0) {
                 const auto msg = fmt::format("anim '{}' frame '{}' height '{}' was not divisible by 8",
                                              ctx.diag->Bold(compiledAnim.animName), ctx.diag->Bold(animFrame.frameName),
                                              ctx.diag->Bold(animPng.png.get_height()));
                 ctx.diag->Report(FatalGeneric, msg);
-                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
             }
 
             frameWidths.insert(animPng.png.get_width());
@@ -1113,14 +1113,14 @@ importCompiledAnimations(PorytilesContext &ctx, DecompilerMode mode,
                                              ctx.diag->Bold(compiledAnim.animName), ctx.diag->Bold(animFrame.frameName),
                                              ctx.diag->Bold(animPng.png.get_width()));
                 ctx.diag->Report(FatalGeneric, msg);
-                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
             }
             if (frameHeights.size() != 1) {
                 const auto msg = fmt::format("anim '{}' frame '{}' height '{}' differed from previous frame height",
                                              ctx.diag->Bold(compiledAnim.animName), ctx.diag->Bold(animFrame.frameName),
                                              ctx.diag->Bold(animPng.png.get_height()));
                 ctx.diag->Report(FatalGeneric, msg);
-                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode), msg);
+                die_decompilationTerminated(ctx, ctx.decompilerSrcPaths.modeBasedSrcPath(mode).string(), msg);
             }
 
             std::size_t pngWidthInTiles = animPng.png.get_width() / TILE_SIDE_LENGTH_PIX;
@@ -1180,7 +1180,7 @@ static std::uint8_t consumeJascHeader(const PorytilesContext &ctx, CompilerMode 
     if (line.empty()) {
         const auto msg = fmt::format("invalid blank line in pal file: {}", fileName);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     if (line.at(line.size() - 1) == '\r') {
         line.pop_back();
@@ -1188,13 +1188,13 @@ static std::uint8_t consumeJascHeader(const PorytilesContext &ctx, CompilerMode 
     if (line != "JASC-PAL") {
         const auto msg = fmt::format("expected 'JASC-PAL' as first line in pal file: {}", fileName);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     std::getline(paletteFile, line);
     if (line.empty()) {
         const auto msg = fmt::format("invalid blank line in pal file: {}", fileName);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     if (line.at(line.size() - 1) == '\r') {
         line.pop_back();
@@ -1202,13 +1202,13 @@ static std::uint8_t consumeJascHeader(const PorytilesContext &ctx, CompilerMode 
     if (line != "0100") {
         const auto msg = fmt::format("expected '0100' as second line in pal file: {}", fileName);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     std::getline(paletteFile, line);
     if (line.empty()) {
         const auto msg = fmt::format("invalid blank line in pal file: {}", fileName);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     if (line.at(line.size() - 1) == '\r') {
         line.pop_back();
@@ -1221,7 +1221,7 @@ static std::uint8_t consumeJascHeader(const PorytilesContext &ctx, CompilerMode 
         paletteSize = 0;
         const auto msg = fmt::format("invalid pal size in pal file: {}", fileName);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     return paletteSize;
 }
@@ -1301,7 +1301,7 @@ std::pair<RGBATile, OverridenPaletteSlots> importPaletteOverride(PorytilesContex
     if (line != "-") {
         const auto msg = fmt::format("{}: 0th override slot must be '-' but saw '{}'", fileName, line);
         ctx.diag->Report(FatalGeneric, msg);
-        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode), msg);
+        die_compilationTerminated(ctx, ctx.compilerSrcPaths.modeBasedSrcPath(compilerMode).string(), msg);
     }
     lineCount++;
 
@@ -1934,7 +1934,7 @@ TEST_CASE("importCompiledTileset should import a triple-layer pokeemerald tilese
         filename << index << ".pal";
         std::filesystem::path paletteFile = decompileCtx.decompilerSrcPaths.primaryPalettes() / filename.str();
         paletteFiles.push_back(std::make_unique<std::ifstream>(paletteFile));
-        paletteFileNames.emplace_back(paletteFile.c_str());
+        paletteFileNames.emplace_back(paletteFile.string());
     }
     // TODO tests : (importCompiledTileset should import a triple-layer...) actually test anims import
     auto [importedTileset, attributesMap] = porytiles_legacy::importCompiledTileset(
