@@ -92,9 +92,12 @@ export(TARGETS LegacyLib FILE ${CMAKE_CURRENT_BINARY_DIR}/LegacyLibraryTargets.c
 if(MSVC)
     target_compile_definitions(LegacyLib PRIVATE _CRT_SECURE_NO_WARNINGS)
     target_compile_options(LegacyLib PRIVATE
-        /wd4458  # declaration hides class member
+        /wd4100  # unreferenced formal parameter
+        /wd4101  # unreferenced local variable
         /wd4244  # possible loss of data (double -> size_t)
         /wd4267  # size_t -> smaller type
+        /wd4458  # declaration hides class member
+        /wd4459  # declaration hides global declaration (optarg/optind)
     )
 endif()
 

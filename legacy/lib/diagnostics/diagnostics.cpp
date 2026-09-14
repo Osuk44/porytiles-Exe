@@ -4,7 +4,14 @@
 #include <ranges>
 #include <sstream>
 #include <type_traits>
-// Windows compatibility: unistd.h not available in MSVC
+#ifdef _WIN32
+#include <io.h>
+#include <stdio.h>
+#define isatty _isatty
+#define fileno _fileno
+#else
+#include <unistd.h>
+#endif
 #include <unordered_set>
 
 #include "diagnostics//diagnostic_engine.hpp"
