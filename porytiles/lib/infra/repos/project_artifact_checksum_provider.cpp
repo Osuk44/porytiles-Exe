@@ -60,7 +60,7 @@ ProjectArtifactChecksumProvider::load_cached_tileset_checksums(const std::string
     std::unordered_map<ArtifactKey, std::string> checksums;
     for (const auto &[key, value] : json_data.items()) {
         const auto full_path = std::filesystem::path{key};
-        checksums.emplace(ArtifactKey{full_path}, value.get<std::string>());
+        checksums.emplace(ArtifactKey{full_path.string()}, value.get<std::string>());
     }
 
     return checksums;
