@@ -1267,13 +1267,15 @@ inline void report_color_counts(
 ///
 /// @todo Implementation pending. Should check Porymap palettes in palette:patch and palette:locked modes.
 [[nodiscard]] inline ChainableResult<void> validate_precision_loss(
-    const TilesetCompileValidatorServices &services,
-    const std::string &tileset_name,
-    const std::vector<Metatile<Rgba32>> &metatiles,
-    const std::map<std::string, Animation<Rgba32>> &anims,
-    const std::array<std::optional<Palette<Rgba32, palette::max_size>>, palette::num_palettes> &porytiles_palettes,
-    const std::vector<PaletteHint> &hints,
-    const std::optional<std::array<Palette<Rgba32, palette::max_size>, palette::num_palettes>> &porymap_palettes)
+    [[maybe_unused]] const TilesetCompileValidatorServices &services,
+    [[maybe_unused]] const std::string &tileset_name,
+    [[maybe_unused]] const std::vector<Metatile<Rgba32>> &metatiles,
+    [[maybe_unused]] const std::map<std::string, Animation<Rgba32>> &anims,
+    [[maybe_unused]] const std::array<std::optional<Palette<Rgba32, palette::max_size>>, palette::num_palettes>
+        &porytiles_palettes,
+    [[maybe_unused]] const std::vector<PaletteHint> &hints,
+    [[maybe_unused]] const std::optional<std::array<Palette<Rgba32, palette::max_size>, palette::num_palettes>>
+        &porymap_palettes)
 {
     return {};
 }
