@@ -82,7 +82,7 @@ ChainableResult<void> HeaderEnumMapProvider::try_add_entry(const Entry &entry) c
 
         lines.push_back(format_->format(
             "{}:{}:{}: '{}' has value '{}', which does not fit in the {}-bit field '{}'.",
-            FormatParam{header_path_, Style::bold},
+            FormatParam{header_path_.string(), Style::bold},
             new_pos.line,
             new_pos.column,
             FormatParam{name, Style::bold},
@@ -116,7 +116,7 @@ ChainableResult<void> HeaderEnumMapProvider::try_add_entry(const Entry &entry) c
         return make_duplicate_error(
             format_->format(
                 "{}:{}:{}: duplicate {} name '{}'.",
-                FormatParam{header_path_, Style::bold},
+                FormatParam{header_path_.string(), Style::bold},
                 new_pos.line,
                 new_pos.column,
                 FormatParam{definition_.field_display_name},
@@ -137,7 +137,7 @@ ChainableResult<void> HeaderEnumMapProvider::try_add_entry(const Entry &entry) c
         return make_duplicate_error(
             format_->format(
                 "{}:{}:{}: duplicate {} value '{}': both '{}' and '{}' have this value.",
-                FormatParam{header_path_, Style::bold},
+                FormatParam{header_path_.string(), Style::bold},
                 new_pos.line,
                 new_pos.column,
                 FormatParam{definition_.field_display_name},

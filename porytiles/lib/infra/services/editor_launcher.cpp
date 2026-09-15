@@ -7,8 +7,11 @@
 #include <optional>
 #include <sstream>
 #include <string>
+
+#ifndef _WIN32
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
 
 #include "porytiles/utilities/result/chainable_result.hpp"
 
@@ -104,6 +107,15 @@ ChainableResult<void> EditorLauncher::edit_file(const std::filesystem::path &fil
     if (status == -1) {
         return FormattableError{"Failed to launch editor '{}'.", FormatParam{editor, Style::bold}};
     }
+#ifdef _WIN32
+    // std::system on Windows returns the exit code directly.
+    if (status != 0) {
+        return FormattableError{
+            "Editor '{}' exited with status {}.",
+            FormatParam{editor, Style::bold},
+            FormatParam{std::to_string(status)}};
+    }
+#else
     if (WIFSIGNALED(status)) {
         return FormattableError{
             "Editor '{}' was terminated by signal {}.",
@@ -116,6 +128,7 @@ ChainableResult<void> EditorLauncher::edit_file(const std::filesystem::path &fil
             FormatParam{editor, Style::bold},
             FormatParam{std::to_string(WEXITSTATUS(status))}};
     }
+#endif
 
     return {};
 }
