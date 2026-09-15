@@ -1,6 +1,7 @@
 #pragma once
 
 #include <bitset>
+#include <bit>
 #include <cstddef>
 #include <cstdint>
 #include <functional>
@@ -138,7 +139,7 @@ void for_each_color(const ColorSet &set, Func &&func)
         // Process only set bits - skip zeros efficiently using Brian Kernighan's technique
         while (chunk != 0) {
             // GCC/Clang builtin to find lowest set bit position (count trailing zeros)
-            const int bit = __builtin_ctzll(chunk);
+            const int bit = std::countr_zero(chunk);
             func(base + static_cast<std::size_t>(bit));
             chunk &= chunk - 1; // Clear lowest set bit
         }

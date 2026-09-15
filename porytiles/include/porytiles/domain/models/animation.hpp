@@ -19,9 +19,9 @@ namespace porytiles {
 
 namespace anim {
 
-constexpr std::string g_tileset_anims_prefix = "gTilesetAnims_";
-constexpr std::string s_tileset_anims_prefix = "sTilesetAnims_";
-constexpr std::string porytiles_managed_prefix = "PorytilesManaged_";
+inline const std::string g_tileset_anims_prefix = "gTilesetAnims_";
+inline const std::string s_tileset_anims_prefix = "sTilesetAnims_";
+inline const std::string porytiles_managed_prefix = "PorytilesManaged_";
 
 // "InitTilesetAnim_PorytilesManaged_": prefix of the init callback symbol Porytiles generates for a managed
 // tileset (i.e. "InitTilesetAnim_" + porytiles_managed_prefix). Used for both constructing and detecting it.
