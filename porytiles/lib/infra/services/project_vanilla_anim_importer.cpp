@@ -75,7 +75,7 @@ ProjectVanillaAnimImporter::import_animations(const std::string &tileset_name) c
             FormattableError{
                 "Failed to parse animation parameters for '{}' from '{}'.",
                 FormatParam{tileset_name, Style::bold},
-                FormatParam{tileset_anims_path, Style::bold}},
+                FormatParam{tileset_anims_path.string(), Style::bold}},
             anim_params_result};
     }
     std::map<DynamicCasedName, AnimParams> anim_params_map = std::move(anim_params_result).value();

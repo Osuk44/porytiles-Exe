@@ -161,7 +161,7 @@ ChainableResult<void> save_metatiles_bin(const std::vector<TilemapEntry> &entrie
 ChainableResult<void> save_palette(
     const Palette<Rgba32, palette::max_size> &palette, const std::filesystem::path &path, const FilePaletteSaver &saver)
 {
-    PT_TRY_CALL_CHAIN_ERR(saver.save(palette, path), void, "'{}': Failed to save.", FormatParam(path.c_str()));
+    PT_TRY_CALL_CHAIN_ERR(saver.save(palette, path), void, "'{}': Failed to save.", FormatParam(path.string()));
     return {};
 }
 

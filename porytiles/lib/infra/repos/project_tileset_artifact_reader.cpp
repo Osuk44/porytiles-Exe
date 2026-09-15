@@ -228,7 +228,7 @@ ProjectTilesetArtifactReader::read_porymap_palette_n(Tileset &dest, const Artifa
         anim_code_parser_->parse_from_callback(params_path, callback_func, tileset_cased, true),
         void,
         "{}: Failed to parse animation parameters.",
-        FormatParam(params_path, Style::bold));
+        FormatParam(params_path.string(), Style::bold));
 
     // Apply params to the specific animation if found
     if (parsed_params.contains(DynamicCasedName{anim_name})) {
@@ -327,14 +327,14 @@ ChainableResult<void> ProjectTilesetArtifactReader::read_porytiles_palette_n(
         anim_json_parser_->parse((project_root_ / params_key.key()).string()),
         void,
         "{}: Failed to parse animation parameters.",
-        FormatParam(project_root_ / params_key.key(), Style::bold));
+        FormatParam((project_root_ / params_key.key()).string(), Style::bold));
 
     // Find params for this specific animation
     auto it = parsed_anim_params.find(DynamicCasedName{anim_name});
     if (it == parsed_anim_params.end()) {
         return ChainableResult<void>{FormattableError{
             "{}: Animation '{}' not found in animation parameters file.",
-            FormatParam{project_root_ / params_key.key(), Style::bold},
+            FormatParam{(project_root_ / params_key.key()).string(), Style::bold},
             FormatParam{anim_name, Style::bold}}};
     }
 
@@ -388,7 +388,7 @@ ProjectTilesetArtifactReader::read_porytiles_primary_anim_references(Tileset &de
         anim_json_parser_->parse_primary_references(json_path),
         void,
         "{}: Failed to parse primary animation references.",
-        FormatParam(json_path, Style::bold));
+        FormatParam(json_path.string(), Style::bold));
 
     if (parsed_refs.empty()) {
         return {};
