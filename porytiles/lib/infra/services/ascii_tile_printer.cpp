@@ -339,7 +339,7 @@ AsciiTilePrinter::print_tile(const PixelTile<Rgba32> &tile, const Rgba32 &extrin
 }
 
 std::vector<std::string>
-AsciiTilePrinter::print_tile(const PixelTile<IndexPixel> &tile, const Rgba32 &extrinsic_transparency) const
+AsciiTilePrinter::print_tile(const PixelTile<IndexPixel> &tile, [[maybe_unused]] const Rgba32 &extrinsic_transparency) const
 {
     const auto greyscale_palette = standard_greyscale_palette();
 
