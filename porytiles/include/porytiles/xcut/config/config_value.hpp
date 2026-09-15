@@ -165,9 +165,7 @@ class ConfigValue {
             err_text.emplace_back("");
             params.emplace_back();
             err_text.append_range(source_details());
-            for (const auto &_ : source_details()) {
-                params.emplace_back();
-            }
+            params.resize(params.size() + source_details().size());
         }
 
         return {err_text, params};
