@@ -99,6 +99,7 @@ if(MSVC)
         /wd4458  # declaration hides class member
         /wd4459  # declaration hides global declaration (optarg/optind)
         /wd4702  # unreachable code (throw after Panic, which is [[noreturn]])
+        /wd4611  # _setjmp + C++ destruction (png++ reader)
     )
 endif()
 

@@ -3,5 +3,7 @@
 set(PORYTILES_LEGACY_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/legacy/include)
 
 add_subdirectory(lib)
-add_subdirectory(tests)
+if(BUILD_TESTING)
+    add_subdirectory(tests)
+endif()
 add_subdirectory(tools)
