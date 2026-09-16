@@ -196,7 +196,7 @@ ProjectTilesetAnimsModifier::ProjectTilesetAnimsModifier(
 }
 
 ChainableResult<void>
-ProjectTilesetAnimsModifier::wire_include_for_tileset(const std::string &tileset_name, bool is_secondary) const
+ProjectTilesetAnimsModifier::wire_include_for_tileset(const std::string &tileset_name, [[maybe_unused]] bool is_secondary) const
 {
     // Step 1: Validate the tileset name carries the expected prefix
     PT_TRY_ASSIGN_PASS_ERR(validated_shorthand, require_tileset_shorthand(tileset_name), void);
