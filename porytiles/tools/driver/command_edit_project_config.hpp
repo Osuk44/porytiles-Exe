@@ -1,6 +1,14 @@
 #pragma once
 
+#ifdef _WIN32
+#include <io.h>
+#define isatty _isatty
+#ifndef STDERR_FILENO
+#define STDERR_FILENO 2
+#endif
+#else
 #include <unistd.h>
+#endif
 
 #include "CLI/CLI.hpp"
 #include "fruit/fruit.h"
