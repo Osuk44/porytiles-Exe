@@ -1183,7 +1183,7 @@ int Parser::operator_precedence(TokenType type) const
     }
 }
 
-bool Parser::is_left_associative(TokenType type) const
+bool Parser::is_left_associative([[maybe_unused]] TokenType type) const
 {
     // All our binary operators are left-associative
     return true;
