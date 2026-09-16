@@ -99,6 +99,11 @@ set_target_properties(PorytilesLib PROPERTIES OUTPUT_NAME "${CANONICAL_LIB_NAME}
 target_compile_definitions(PorytilesLib PRIVATE PORYTILES_BUILD_VERSION_=${PORYTILES_BUILD_VERSION_})
 target_compile_definitions(PorytilesLib PRIVATE PORYTILES_BUILD_DATE_=${PORYTILES_BUILD_DATE_})
 
+# MSVC: silence CRT deprecation warnings (getenv, strncpy, etc.)
+if(MSVC)
+    target_compile_definitions(PorytilesLib PRIVATE _CRT_SECURE_NO_WARNINGS)
+endif()
+
 # Ensure config code is generated before building the library
 add_dependencies(PorytilesLib generate_config_code)
 

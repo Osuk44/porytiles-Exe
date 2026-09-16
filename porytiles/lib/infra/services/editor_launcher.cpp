@@ -37,17 +37,34 @@ bool found_on_path(const std::string &name)
         return false;
     }
 
+#ifdef _WIN32
+    constexpr char path_separator = ';';
+    const std::array<const char *, 4> extensions = {".exe", ".bat", ".cmd", ".com"};
+#else
+    constexpr char path_separator = ':';
+#endif
+
     std::istringstream stream{path_env.value()};
     std::string dir;
-    while (std::getline(stream, dir, ':')) {
+    while (std::getline(stream, dir, path_separator)) {
         if (dir.empty()) {
             continue;
         }
+#ifdef _WIN32
+        for (const auto *ext : extensions) {
+            const std::filesystem::path candidate = std::filesystem::path{dir} / (name + ext);
+            std::error_code ec;
+            if (std::filesystem::is_regular_file(candidate, ec)) {
+                return true;
+            }
+        }
+#else
         const std::filesystem::path candidate = std::filesystem::path{dir} / name;
         std::error_code ec;
-        if (std::filesystem::is_regular_file(candidate, ec) && access(candidate.c_str(), X_OK) == 0) {
+        if (std::filesystem::is_regular_file(candidate, ec) && ::access(candidate.c_str(), X_OK) == 0) {
             return true;
         }
+#endif
     }
     return false;
 }
