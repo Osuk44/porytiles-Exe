@@ -1,6 +1,7 @@
 #include "porytiles/utilities/text/file_highlight_printer.hpp"
 
 #include <algorithm>
+#include <tuple>
 #include <cstddef>
 #include <filesystem>
 #include <fstream>
@@ -74,7 +75,7 @@ std::vector<std::string> read_file_lines(const std::filesystem::path &file)
     std::ifstream stream{file};
     std::string line_buf{};
     while (std::getline(stream, line_buf)) {
-        trim_line_ending(line_buf);
+        std::ignore = trim_line_ending(line_buf);
         lines.push_back(line_buf);
     }
     return lines;

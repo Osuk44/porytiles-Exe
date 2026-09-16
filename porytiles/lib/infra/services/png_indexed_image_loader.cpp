@@ -20,13 +20,13 @@ PngIndexedImageLoader::load_from_file(const std::filesystem::path &path) const
 
     try {
         // Do this here so if the source is not a PNG, we can catch and give a better error
-        png::image<png::index_pixel> test{path};
+        png::image<png::index_pixel> test{path.string()};
     }
     catch (std::exception &) {
         return FormattableError{"'{}': File not a valid indexed PNG.", FormatParam{path.string(), Style::bold}};
     }
 
-    png::image<png::index_pixel> png{path};
+    png::image<png::index_pixel> png{path.string()};
     const auto tilesheet_width = png.get_width();
     const auto tilesheet_height = png.get_height();
     const auto tilesheet_size = tilesheet_width * tilesheet_height;

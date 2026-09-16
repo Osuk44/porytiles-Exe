@@ -1,6 +1,7 @@
 #include "porytiles/infra/services/jasc_palette_loader.hpp"
 
 #include <expected>
+#include <tuple>
 #include <filesystem>
 #include <fstream>
 #include <optional>
@@ -93,7 +94,7 @@ ChainableResult<Palette<Rgba32, palette::max_size>> parse_jasc_file(
         std::ifstream stream{path};
         std::string line_buf{};
         while (std::getline(stream, line_buf)) {
-            trim_line_ending(line_buf);
+            std::ignore = trim_line_ending(line_buf);
             lines.push_back(line_buf);
         }
     }

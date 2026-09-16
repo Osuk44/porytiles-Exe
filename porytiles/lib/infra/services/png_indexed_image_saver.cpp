@@ -22,7 +22,7 @@ ChainableResult<void> PngIndexedImageSaver::save_to_file(
 
     // Bail if given path exists already and isn't a file (i.e. it's a directory)
     if (exists(path) && !is_regular_file(path)) {
-        return FormattableError{std::format("{}: exists but is not a file", path.filename().c_str())};
+        return FormattableError{std::format("{}: exists but is not a file", path.filename().string())};
     }
 
     // Determine which palette to use
@@ -58,7 +58,7 @@ ChainableResult<void> PngIndexedImageSaver::save_to_file(
                 img[row][col] = image.at(pixel_index).index();
             }
         }
-        img.write(path);
+        img.write(path.string());
     };
 
     // Write PNG to filesystem using the appropriate pixel type for mode
@@ -74,7 +74,7 @@ ChainableResult<void> PngIndexedImageSaver::save_to_file(
         }
     }
     catch (const std::exception &e) {
-        return FormattableError{std::format("{}: save failed: {}", path.filename().c_str(), e.what())};
+        return FormattableError{std::format("{}: save failed: {}", path.filename().string(), e.what())};
     }
 
     return {};
