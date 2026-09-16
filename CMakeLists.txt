@@ -7,6 +7,15 @@ option(PORYTILES_BUILD_DOCS "Build Porytiles documentation" ON)
 
 project(Porytiles VERSION ${PORYTILES_PROJECT_VERSION} LANGUAGES CXX)
 
+# Force static CRT (/MT) across all targets and FetchContent dependencies.
+# Without this, yaml-cpp (pulled via FetchContent) builds with /MT while our
+# targets default to /MD, causing LNK2038 RuntimeLibrary mismatch during
+# the final exe link (and/or LNK2005 for duplicated msvcrt symbols).
+# Static CRT also matches vcpkg's x64-windows-static triplet.
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "" FORCE)
+endif()
+
 # Default the version stamp baked into both binaries. CI overrides via `cmake -DPORYTILES_BUILD_VERSION_=<snapshot-string>`.
 if(NOT DEFINED PORYTILES_BUILD_VERSION_)
     set(PORYTILES_BUILD_VERSION_ ${CMAKE_PROJECT_VERSION})
