@@ -5,8 +5,12 @@
 #include <optional>
 #include <string>
 
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <sys/ioctl.h>
 #include <unistd.h>
+#endif
 
 namespace {
 
@@ -31,14 +35,27 @@ std::optional<std::size_t> width_from_columns_env()
     return std::nullopt;
 }
 
-/// @brief Queries the terminal column count for @p fd via ioctl, if it is a terminal reporting a width.
-std::optional<std::size_t> width_from_ioctl(const int fd)
+/// @brief Queries the terminal column count for @p fd, if it is a terminal reporting a width.
+std::optional<std::size_t> width_from_terminal([[maybe_unused]] const int fd)
 {
+#ifdef _WIN32
+    // Windows: query the console screen buffer info. The `fd` argument is ignored
+    // (POSIX-style file descriptors don't exist on Windows consoles).
+    CONSOLE_SCREEN_BUFFER_INFO csbi{};
+    if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi)) {
+        const int width = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+        if (width > 0) {
+            return static_cast<std::size_t>(width);
+        }
+    }
+    return std::nullopt;
+#else
     struct winsize ws{};
     if (ioctl(fd, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0) {
         return static_cast<std::size_t>(ws.ws_col);
     }
     return std::nullopt;
+#endif
 }
 
 } // namespace
@@ -50,8 +67,8 @@ std::size_t resolve_terminal_width(const int fd, const std::size_t fallback)
     if (const auto from_env = width_from_columns_env()) {
         return *from_env;
     }
-    if (const auto from_ioctl = width_from_ioctl(fd)) {
-        return *from_ioctl;
+    if (const auto from_terminal = width_from_terminal(fd)) {
+        return *from_terminal;
     }
     return fallback;
 }

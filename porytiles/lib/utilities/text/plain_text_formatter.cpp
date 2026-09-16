@@ -4,7 +4,7 @@
 
 namespace porytiles {
 
-std::string PlainTextFormatter::style(const std::string &text, Style styles) const
+std::string PlainTextFormatter::style(const std::string &text, [[maybe_unused]] Style styles) const
 {
     // no style text is applied
     return text;
