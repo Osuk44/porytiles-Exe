@@ -168,21 +168,36 @@ jobs:
         shell: pwsh
         run: cmake --build build --config Release
 
-      - name: Verify binary
+      - name: Verify binaries
         shell: pwsh
         run: |
-          if (-not (Test-Path build\porytiles.exe)) {
-            Write-Host "=== .exe no encontrado, listando build/ ==="
-            Get-ChildItem -Recurse build\ -Include *.exe,*.dll | Format-Table -AutoSize
-            throw "Build falló: porytiles.exe no existe"
+          $legacy = "build\legacy\tools\driver\porytiles-legacy.exe"
+          $new    = "build\porytiles\tools\driver\porytiles.exe"
+          $ok = $true
+          foreach ($f in @($legacy, $new)) {
+            if (Test-Path $f) {
+              $item = Get-Item $f
+              Write-Host "OK: $($item.FullName) ($($item.Length) bytes)"
+            } else {
+              Write-Host "MISSING: $f"
+              $ok = $false
+            }
           }
-          Get-Item build\porytiles.exe | Format-List Name, Length, LastWriteTime
+          if (-not $ok) {
+            Write-Host "=== Listado recursivo de build/*.exe (sin _deps) ==="
+            Get-ChildItem -Recurse build\ -Include *.exe |
+              Where-Object { $_.FullName -notmatch '_deps' } |
+              Format-Table -AutoSize FullName, Length
+            throw "Build fallo: falta uno o ambos .exe esperados"
+          }
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
         with:
           name: porytiles-windows-exe
-          path: build/porytiles.exe
+          path: |
+            build/**/porytiles.exe
+            build/**/porytiles-legacy.exe
           retention-days: 30
 
       - name: Job summary
