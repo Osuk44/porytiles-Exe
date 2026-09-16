@@ -83,7 +83,6 @@ void apply_sgr(std::string &active, const std::string &prefix)
 {
     std::size_t pos = 0;
     while (pos < prefix.size()) {
-        const std::size_t start = pos;
         std::string seq = consume_escape(prefix, pos);
         if (seq == ansi_reset || seq == "\033[m") {
             active.clear();
