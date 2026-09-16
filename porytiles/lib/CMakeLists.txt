@@ -118,7 +118,7 @@ target_include_directories(PorytilesLib PUBLIC ${PORYTILES_INCLUDE_DIR})
 
 # For header-only libs, we pull the sources and add headers to include path
 if (pngpp_SOURCE_DIR)
-    target_include_directories(PorytilesLib PRIVATE ${pngpp_SOURCE_DIR}/include)
+    target_include_directories(PorytilesLib SYSTEM PRIVATE ${pngpp_SOURCE_DIR}/include)
 else ()
     message(FATAL_ERROR "pngpp_SOURCE_DIR was empty")
 endif ()
