@@ -30,7 +30,7 @@ PngRgbaImageSaver::save_to_file(const Image<Rgba32> &image, const std::filesyste
         png.write(path.string());
     }
     catch (const std::exception &e) {
-        return FormattableError{std::format("{}: save failed: {}", path.filename().c_str(), e.what())};
+        return FormattableError{std::format("{}: save failed: {}", path.filename().string(), e.what())};
     }
 
     return {};

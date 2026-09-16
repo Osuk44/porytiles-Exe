@@ -51,11 +51,11 @@ ChainableResult<void> PngIndexedImageSaver::save_to_file(
             const auto col = pixel_index % image.width();
             if constexpr (std::is_same_v<PixelType, png::index_pixel_4>) {
                 // 4-bit PNG: extract only the lower 4 bits (color index within palette)
-                img[row][col] = image.at(pixel_index).color_index();
+                img[row][col] = static_cast<png::byte>(image.at(pixel_index).color_index());
             }
             else {
                 // 8-bit PNG: preserve full value (may include palette index in upper 4 bits for true-color mode)
-                img[row][col] = image.at(pixel_index).index();
+                img[row][col] = static_cast<png::byte>(image.at(pixel_index).index());
             }
         }
         img.write(path.string());
