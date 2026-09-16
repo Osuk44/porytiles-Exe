@@ -191,6 +191,16 @@ jobs:
             throw "Build fallo: falta uno o ambos .exe esperados"
           }
 
+      - name: Smoke test binaries
+        shell: pwsh
+        run: |
+          & build\porytiles\tools\driver\porytiles.exe --version
+          if ($LASTEXITCODE -ne 0) { throw "porytiles.exe --version failed" }
+          & build\porytiles\tools\driver\porytiles.exe --help | Select-Object -First 5
+          & build\legacy\tools\driver\porytiles-legacy.exe --version
+          if ($LASTEXITCODE -ne 0) { throw "porytiles-legacy.exe --version failed" }
+          Write-Host "OK: both binaries start"
+
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
         with:
